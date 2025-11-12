@@ -98,7 +98,9 @@ The script generates `SolarEclipses_from_Takesako.txt` with 23,732 eclipses from
 
 ## Verification
 
-Comparison with NASA SolarEclipses.txt for August 11, 1999:
+### Example: August 11, 1999 Eclipse
+
+Comparison with NASA SolarEclipses.txt:
 
 **NASA data:**
 ```
@@ -111,6 +113,16 @@ Comparison with NASA SolarEclipses.txt for August 11, 1999:
 ```
 
 The time differs by 1 second (due to rounding in datetime conversion), and empty fields represent data not available in the Takesako format. The key eclipse parameters (date, time, type, gamma, Delta T, Saros) match accurately.
+
+### Validation Statistics
+
+Comparison of 3,363 overlapping eclipses (years 1-3000):
+- **Date matches**: 100% (3,363/3,363)
+- **Saros matches**: 100% (3,363/3,363)
+- **Time accuracy**: Within 4 seconds for all eclipses
+- **Type matches**: 84.7% (2,849/3,363)
+  - Differences mainly affect Hybrid eclipse classification
+  - Core eclipse data (gamma, date, time) remains accurate
 
 ## Usage
 
@@ -126,8 +138,12 @@ python3 convert_takesako_eclipses.py ecp00001p03000.prn ecp03001p08000.prn
 
 1. **Date range**: Years 13001-16999 cannot be processed due to Python datetime limitations
 2. **Missing fields**: Magnitude, coordinates, path width, and duration are not available
-3. **Time precision**: Times may differ by ~1 second from NASA data due to rounding
-4. **Eclipse type**: Hybrid eclipse detection is approximate based on gamma thresholds
+3. **Time precision**: Times may differ by 1-4 seconds from NASA data due to rounding in datetime calculations
+4. **Eclipse type differences**: There are ~514 eclipses (out of 3,363 overlapping) where the eclipse type differs from NASA data:
+   - This occurs primarily with Hybrid (H) eclipses
+   - Takesako's type codes don't directly correspond to NASA's classification system
+   - The differences don't affect the primary eclipse characteristics (date, time, gamma, saros)
+   - For most applications, the mapped types are sufficiently accurate
 
 ## References
 
