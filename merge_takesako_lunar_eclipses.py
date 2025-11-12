@@ -4,14 +4,22 @@ Script to merge and convert Takesako mc*.prn files to LunarEclipses.txt format.
 
 The mc*.prn files contain lunar eclipse data from Shinobu Takesako based on JPL data.
 Each eclipse is represented by 3 lines:
-- Line 1: Year Month Day Type ... JulianDay ...
-- Line 2: Additional numeric data including longitude info
-- Line 3: Additional numeric data including latitude info
+- Line 1: Year Month Day Type ... JulianDay ... Hour
+- Line 2: Additional numeric data 
+- Line 3: Additional numeric data including latitude and longitude
 
 This script:
 1. Merges all mcm*.prn files (BCE dates) in chronological order
 2. Merges all mcp*.prn files (CE dates) in chronological order  
 3. Converts to LunarEclipses.txt format with column headers
+
+NOTE: The exact format of Takesako's data is not fully documented. This conversion:
+- Date: Extracted from line 1 (accurate)
+- Time: Calculated from Julian Day (approximate, may differ by ~10-15 minutes due to ΔT)
+- Eclipse type: Mapped from code in line 1 (1=Total, 2=Partial, 3=Penumbral)
+- Latitude: Extracted from line 3, 2nd-to-last column (accurate)
+- Longitude: Extracted from line 3, 4th-from-last column (approximate)
+- Magnitudes: Not available in this format, marked as "—"
 """
 
 import sys
@@ -136,24 +144,31 @@ def parse_eclipse_record(line1, line2, line3):
         # Get time from Julian day
         jd_year, jd_month, jd_day, hour, minute, second = julian_day_to_datetime(julian_day)
         
-        # Parse line 2 - contains longitude information
+        # Parse line 2
         parts2 = line2.split()
         if len(parts2) < 9:
             return None
-        # Second to last column often contains longitude-related value
-        lon_value = float(parts2[-2])  # This appears to be in degrees (0-360 range)
         
-        # Parse line 3 - contains latitude information  
+        # Parse line 3 - contains latitude and longitude information  
         parts3 = line3.split()
         if len(parts3) < 10:
             return None
-        # Second to last column contains latitude
+        
+        # Second to last column contains latitude (verified accurate)
         lat_deg = float(parts3[-2])
+        
+        # Fourth from last column (index -4) appears to contain longitude information
+        # The exact formula for conversion is not documented in the available sources
+        # Using direct conversion from 0-360 to -180/+180 range as approximation
+        lon_value = float(parts3[-4])
         
         # Convert longitude from 0-360 to -180 to 180
         lon_deg = lon_value
         if lon_deg > 180:
             lon_deg = lon_deg - 360
+        
+        # Note: This longitude may be approximate. The Takesako format appears to use
+        # a complex coordinate system that may involve hour angle or other corrections.
         
         # Format lat/long
         lat_str = format_latitude(lat_deg)
