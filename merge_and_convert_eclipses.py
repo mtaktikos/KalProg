@@ -32,12 +32,23 @@ def jd_to_time(jd):
     Returns:
         tuple: (hour, minute, second)
     """
-    # Get the fractional part of the day from midnight (not noon)
-    # JD starts at noon, so we need to subtract 0.5 to get time from midnight
-    frac_day = jd - int(jd) - 0.5
+    # For negative JDs, we need to handle the fractional part differently
+    # because Python's % operator doesn't work the same way for negative numbers
     
-    # If the result is negative, it means the time is before noon of the previous day
-    # which means it's actually the current day after midnight
+    # Get the fractional part (always positive)
+    if jd >= 0:
+        frac_day = jd - int(jd)
+    else:
+        # For negative JDs, we need to get the positive fractional part
+        # e.g., -3027078.61056 -> 0.38944 (1 - 0.61056)
+        frac_day = 1.0 - (abs(jd) - int(abs(jd)))
+        if frac_day >= 1.0:
+            frac_day = 0.0
+    
+    # JD starts at noon, so subtract 0.5 to get time from midnight
+    frac_day = frac_day - 0.5
+    
+    # If negative, add 1 (wraps to previous day)
     if frac_day < 0:
         frac_day += 1.0
     
