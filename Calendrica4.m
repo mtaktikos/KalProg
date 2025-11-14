@@ -2133,8 +2133,7 @@ DaysPlusC[date_, summand_] :=
 (* TimePlus: Adds s seconds to a Gregorian time list {year, month, day, hour, minute, second} *)
 TimePlus[list_List, s_] :=
  Module[{year, month, day, hour, minute, second, totalSeconds, 
-   newSeconds, dayDelta, fixedDate, newFixedDate, gregorianDate, 
-   time},
+   newSeconds, dayDelta, fixedDate, newFixedDate, gregorianDate},
   (* Extract components from input list *)
   {year, month, day, hour, minute, second} = list;
   
@@ -2145,12 +2144,6 @@ TimePlus[list_List, s_] :=
   (* Calculate day offset and remaining seconds *)
   dayDelta = Floor[totalSeconds / (24*3600)];
   newSeconds = Mod[totalSeconds, 24*3600];
-  
-  (* Handle negative seconds properly *)
-  If[newSeconds < 0,
-   dayDelta = dayDelta - 1;
-   newSeconds = newSeconds + 24*3600
-  ];
   
   (* Calculate new date *)
   newFixedDate = fixedDate + dayDelta;
