@@ -324,6 +324,10 @@ DateDistanceC::usage = "DateDistanceC[date1, date2] returns the number of days
 from calendar $date1$ until calendar $date2$, performing calendar conversion as
 necessary."
 
+TimePlus::usage = "TimePlus[list, s] adds s seconds to a Gregorian time list {year, month, day, hour, minute, second} and returns the new time as a list of 6 parameters. The parameter s can be negative."
+
+TimeDistance::usage = "TimeDistance[list1, list2] takes two Gregorian time lists each with 6 parameters {year, month, day, hour, minute, second} and returns their distance in seconds."
+
 EquiSol::usage="EquiSol[y] returns the equinoxes and solstices for a given year"
 
 NeumondGregorian::usage="NeumondGregorian[y] returns all new moons in year y, the output are (proleptic) Gregorian dates, 
@@ -570,6 +574,8 @@ Hebrew calendar, that is, Tishri 1, 1 AM"
 
 HebrewLeapYearQ::usage = "HebrewLeapYearQ[hYear] returns True if $hYear$ is a leap
 year on the Hebrew calendar, False otherwise."
+
+SabbatYearQ::usage = "SabbatYearQ[year] returns True if year is a Sabbatical year"
 
 LastMonthOfHebrewYear::usage = "LastMonthOfHebrewYear[hYear] returns the last month
 of the Hebrew $hYear$."
@@ -2126,6 +2132,60 @@ DaysPlusC[date_, summand_] :=
  Module[{f = Head[date], ex = First[ConvertDateTo[date,]] + summand}, 
   f[ex]]
   
+(* TimePlus: Adds s seconds to a Gregorian time list {year, month, day, hour, minute, second} *)
+TimePlus[list_List, s_] :=
+ Module[{year, month, day, hour, minute, second, totalSeconds, 
+   newSeconds, dayDelta, fixedDate, newFixedDate, gregorianDate},
+  (* Extract components from input list *)
+  {year, month, day, hour, minute, second} = list;
+  
+  (* Convert time to moment *)
+  fixedDate = ToFixed[Gregorian[year, month, day]];
+  totalSeconds = hour*3600 + minute*60 + second + s;
+  
+  (* Calculate day offset and remaining seconds *)
+  dayDelta = Floor[totalSeconds / (24*3600)];
+  newSeconds = Mod[totalSeconds, 24*3600];
+  
+  (* Calculate new date *)
+  newFixedDate = fixedDate + dayDelta;
+  gregorianDate = Gregorian[newFixedDate];
+  
+  (* Convert seconds back to hours, minutes, seconds *)
+  hour = Floor[newSeconds / 3600];
+  newSeconds = newSeconds - hour*3600;
+  minute = Floor[newSeconds / 60];
+  second = newSeconds - minute*60;
+  
+  (* Return as list *)
+  {CYear[gregorianDate], CMonth[gregorianDate], CDay[gregorianDate], 
+   hour, minute, second}
+ ]
+
+(* TimeDistance: Returns the distance in seconds between two time lists *)
+TimeDistance[list1_List, list2_List] :=
+ Module[{year1, month1, day1, hour1, minute1, second1, year2, month2, 
+   day2, hour2, minute2, second2, fixed1, fixed2, dayDiff, timeDiff1, 
+   timeDiff2},
+  (* Extract components *)
+  {year1, month1, day1, hour1, minute1, second1} = list1;
+  {year2, month2, day2, hour2, minute2, second2} = list2;
+  
+  (* Convert to fixed dates *)
+  fixed1 = ToFixed[Gregorian[year1, month1, day1]];
+  fixed2 = ToFixed[Gregorian[year2, month2, day2]];
+  
+  (* Calculate day difference in seconds *)
+  dayDiff = (fixed2 - fixed1) * 24 * 3600;
+  
+  (* Calculate time difference in seconds *)
+  timeDiff1 = hour1*3600 + minute1*60 + second1;
+  timeDiff2 = hour2*3600 + minute2*60 + second2;
+  
+  (* Return total difference *)
+  dayDiff + timeDiff2 - timeDiff1
+ ]
+
 MeanYear[cal_] := 
  N[DateDistanceC[cal[100, 1, 1], cal[500, 1, 1]]/400, 10]
   
@@ -4060,7 +4120,11 @@ HebrewEpoch[] =
 
 HebrewLeapYearQ[hYear_Integer] :=
 	Mod[1 + 7 hYear, 19] < 7
-
+	
+SabbatYearQ[n_] := Module[{erg = False},
+   If[n < 0 && Mod[n, 7] == 5, erg = True];
+   If[n > 0 && Mod[n, 7] == 6, erg = True];
+   erg]; 
 
 (** last-month-of-hebrew-year **)
 

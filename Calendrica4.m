@@ -372,10 +372,10 @@ ggg::usage= "ggg[{grad,min,sec}] wandelt {grad,min,sec} in
   Julianische Datum an, d.h. die Zahl der seit dem 17.11.1858 
   0 Uhr WEZ vergangenen Tage. Es gilt 
   mjd[date,0]= julianisch[date]-2400000.5.
-  mjd berï¿½cksichtigt, daï¿½ auf den 4.10.1582 der 15.10.1582 folgte." 
+  mjd berücksichtigt, daß auf den 4.10.1582 der 15.10.1582 folgte." 
 
 unmjd::usage= "unmjd[mjd] bestimmt zu einer Anzahl Tage
- mjd das zugehï¿½rige Kalenderdatum." 
+ mjd das zugehörige Kalenderdatum." 
 
  fixedDate::usage ="fixedDate[datum,stunde] geht vom ersten Tag
 des Kalenders aus."
@@ -574,6 +574,8 @@ Hebrew calendar, that is, Tishri 1, 1 AM"
 
 HebrewLeapYearQ::usage = "HebrewLeapYearQ[hYear] returns True if $hYear$ is a leap
 year on the Hebrew calendar, False otherwise."
+
+SabbatYearQ::usage = "SabbatYearQ[year] returns True if year is a Sabbatical year"
 
 LastMonthOfHebrewYear::usage = "LastMonthOfHebrewYear[hYear] returns the last month
 of the Hebrew $hYear$."
@@ -2129,7 +2131,7 @@ DaysBetweenC[date1_, date2_] :=
 DaysPlusC[date_, summand_] := 
  Module[{f = Head[date], ex = First[ConvertDateTo[date,]] + summand}, 
   f[ex]]
-
+  
 (* TimePlus: Adds s seconds to a Gregorian time list {year, month, day, hour, minute, second} *)
 TimePlus[list_List, s_] :=
  Module[{year, month, day, hour, minute, second, totalSeconds, 
@@ -2183,7 +2185,7 @@ TimeDistance[list1_List, list2_List] :=
   (* Return total difference *)
   dayDiff + timeDiff2 - timeDiff1
  ]
-  
+
 MeanYear[cal_] := 
  N[DateDistanceC[cal[100, 1, 1], cal[500, 1, 1]]/400, 10]
   
@@ -3036,17 +3038,17 @@ Qussay[date_Integer] :=
 MonthNames[Icelandic, ASCII] = {
 	"Harpa", 
 	"Skerpia", 
-	"Sï¿½lmï¿½nuï¿½ur", 
+	"Sólmánuður", 
 	"Samarauki", 
 	"Heyannir", 
-	"Tvï¿½mï¿½nuï¿½ur", 
-	"Haustmï¿½nuï¿½ur", 
-	"Gormï¿½nuï¿½ur", 
-	"ï¿½lir", 
-	"Mï¿½rsugur",
-    "ï¿½orri",
-    "Gï¿½a",
-	"Einmï¿½nuï¿½ur"}
+	"Tvímánuður", 
+	"Haustmánuður", 
+	"Gormánuður", 
+	"Ýlir", 
+	"Mörsugur",
+    "Þorri",
+    "Góa",
+	"Einmánuður"}
 
 (** Icelandic-epoch **)
 
@@ -4118,7 +4120,11 @@ HebrewEpoch[] =
 
 HebrewLeapYearQ[hYear_Integer] :=
 	Mod[1 + 7 hYear, 19] < 7
-
+	
+SabbatYearQ[n_] := Module[{erg = False},
+   If[n < 0 && Mod[n, 7] == 5, erg = True];
+   If[n > 0 && Mod[n, 7] == 6, erg = True];
+   erg]; 
 
 (** last-month-of-hebrew-year **)
 
@@ -5995,7 +6001,7 @@ fruehesterSonnenuntergang[jahr_, ort_] :=
     erg = {21, Sonnenuntergang[Gregorian[jahr, 12, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der frï¿½heste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der früheste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6005,7 +6011,7 @@ fruehesterSonnenaufgang[jahr_, ort_] :=
     erg = {21, Sonnenaufgang[Gregorian[jahr, 6, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der frï¿½heste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der früheste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6015,7 +6021,7 @@ spaetesterSonnenaufgang[jahr_, ort_] :=
    erg = {tag, Sonnenaufgang[Gregorian[jahr, 12, 21], ort]};
    Do[tag = DaysPlusC[tag, 1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der spï¿½teste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der späteste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
   erg[[1]] ]
@@ -6026,7 +6032,7 @@ spaetesterSonnenuntergang[jahr_, ort_] :=
    Do[tag = DaysPlusC[tag, 1]; 
     akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der spï¿½teste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der späteste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]];
