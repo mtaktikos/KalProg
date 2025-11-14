@@ -2224,35 +2224,64 @@ EquiSol[j_] :=
   std = Map[gms, std];
   erg = Table[{date[[i]], std[[i]]}, {i, 1, 4}];
   erg = Map[DynamischInWeltzeit[#] &, erg]; erg]
-
-NeumondGregorian[jahr_] := 
- Module[{start, fi, el, aus = {}}, 
+  
+  NeumondGregorian[jahr_] := 
+ Module[{correctedseconds = 
+    0.003464788444132334* jahr^2 - 13.49712325998752*jahr + 11776.4, 
+   start, fi, fein, el, aus = {}}, 
   start = ToFixed[Gregorian[jahr, 1, 1]];
   Do[fi = NewMoonAfter[start];
    el = {Gregorian[Floor[fi]], gms[(fi - Floor[fi])*24]};
+   fein = 
+    TimePlus[{el[[1, 1]], el[[1, 2]], el[[1, 3]], el[[2, 1]], 
+      el[[2, 2]], el[[2, 3]]}, correctedseconds];
+   el = {Gregorian[fein[[1]], fein[[2]], fein[[3]]], {fein[[4]], 
+      fein[[5]], fein[[6]]}};
    If[el[[1, 1]] == jahr, aus = Append[aus, el]];
    start = fi + 1, {i, 1, 13}]; aus]
 
-VollmondGregorian[jahr_] := Module[{start, fi, el, aus = {}},
+VollmondGregorian[jahr_] := 
+ Module[{correctedseconds = 
+    0.003464788444132334* jahr^2 - 13.49712325998752*jahr + 11776.4, 
+   start, fi, fein, el, aus = {}}, 
   start = ToFixed[Gregorian[jahr, 1, 1]];
   Do[fi = FullMoonAfter[start];
    el = {Gregorian[Floor[fi]], gms[(fi - Floor[fi])*24]};
+   fein = 
+    TimePlus[{el[[1, 1]], el[[1, 2]], el[[1, 3]], el[[2, 1]], 
+      el[[2, 2]], el[[2, 3]]}, correctedseconds];
+   el = {Gregorian[fein[[1]], fein[[2]], fein[[3]]], {fein[[4]], 
+      fein[[5]], fein[[6]]}};
+   If[el[[1, 1]] == jahr, aus = Append[aus, el]];
+   start = fi + 1, {i, 1, 13}]; aus]
+NeumondAlternate[jahr_] :=
+ Module[{ 
+   correctedseconds = 
+    0.003464788444132334* jahr^2 - 13.49712325998752*jahr + 11776.4,
+   calAkt, start, fi, fein, el, aus = {}},
+  If[jahr < 1582, calAkt = Julian, calAkt = Gregorian];
+  start = ToFixed[calAkt[jahr, 1, 1]];
+  Do[fi = NewMoonAfter[start];
+   el = {calAkt[Floor[fi]], gms[(fi - Floor[fi])*24]};
+   fein = 
+    TimePlus[{el[[1, 1]], el[[1, 2]], el[[1, 3]], el[[2, 1]], 
+      el[[2, 2]], el[[2, 3]]}, correctedseconds];
+   el = {calAkt[fein[[1]], fein[[2]], fein[[3]]], {fein[[4]], 
+      fein[[5]], fein[[6]]}};
    If[el[[1, 1]] == jahr, aus = Append[aus, el]];
    start = fi + 1, {i, 1, 13}]; aus]
 
-NeumondAlternate[jahr_] := Module[{calAkt, start, fi, el, aus = {}},
-   If[jahr < 1582, calAkt = Julian, calAkt = Gregorian]; 
-   start = ToFixed[calAkt[jahr, 1, 1]];
-   Do[fi = NewMoonAfter[start];
-    el = {calAkt[Floor[fi]], gms[(fi - Floor[fi])*24]};
-    If[el[[1, 1]] == jahr, aus = Append[aus, el]];
-    start = fi + 1, {i, 1, 13}]; aus]
-
-VollmondAlternate[jahr_] := Module[{calAkt, start, fi, el, aus = {}},
-  If[jahr < 1582, calAkt = Julian, calAkt = Gregorian]; 
+VollmondAlternate[jahr_] := 
+ Module[{correctedseconds = 
+    0.003464788444132334* jahr^2 - 13.49712325998752*jahr + 11776.4, 
+   calAkt, start, fi, fein, el, aus = {}}, 
+  If[jahr < 1582, calAkt = Julian, calAkt = Gregorian];
   start = ToFixed[calAkt[jahr, 1, 1]];
   Do[fi = FullMoonAfter[start];
    el = {calAkt[Floor[fi]], gms[(fi - Floor[fi])*24]};
+   fein = 
+    TimePlus[{el[[1, 1]], el[[1, 2]], el[[1, 3]], el[[2, 1]], 
+      el[[2, 2]], el[[2, 3]]}, correctedseconds];
    If[el[[1, 1]] == jahr, aus = Append[aus, el]];
    start = fi + 1, {i, 1, 13}]; aus]
 
