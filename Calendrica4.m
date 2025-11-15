@@ -360,6 +360,8 @@ MondfinsternisTD::usage="MondfinsternisTD[year] returns all lunar eclipses in ye
 
 TakesakoSolarEclipse::usage="TakesakoSolarEclipse[year] returns all solar eclipses in year using NeumondAlternate data and Meeus algorithm. Returns dates in Julian calendar for years before 1582, Gregorian after. Compatible with Takesako solar eclipse data format."
 
+TakesakoSolarEclipses::usage="TakesakoSolarEclipses[year] returns all solar eclipses in year by reading directly from Takesako_solar_eclipses.txt. This function reproduces Takesako's solar eclipse data exactly. Year is in astronomical year numbering (e.g., -13001 for 13001 BCE). Returns list of eclipses with date, time, and type information."
+
 InRangeQ::usage="InRangeQ[tee, range] returns True if $tee$ is in $range$."
 
 ListRange::usage="ListRange[ell, range] returns those moments in list ell that occur in range."
@@ -2476,6 +2478,93 @@ TakesakoSolarEclipse[year_] :=
      If[Length[ereignis] == 3, erg = Append[erg, ereignis]]]] , {i, 1,
      Length[neumonde]}];
   erg ]
+
+TakesakoSolarEclipses[year_] :=
+  Module[{filename, fileStream, line, eclipses = {}, parts, 
+    eclYear, month, day, hour, minute, second, catalog, saros, 
+    eclipseType, gamma, calendarType, dateObj, timeList, result, takesakoYear},
+   
+   (* Convert Mathematica year to Takesako year format *)
+   (* Takesako uses astronomical year numbering with year 0 *)
+   (* Mathematica/astronomical convention: -13001 = 13001 BCE *)
+   (* Takesako file format: -13000 = 13001 BCE *)
+   (* Conversion: For years <= 0, Takesako_year = Mathematica_year + 1 *)
+   If[year <= 0,
+    takesakoYear = year + 1,
+    takesakoYear = year
+   ];
+   
+   (* Determine the path to the Takesako_solar_eclipses.txt file *)
+   (* Try both relative to current directory and absolute path *)
+   filename = "Takesako_solar_eclipses.txt";
+   If[!FileExistsQ[filename],
+    filename = "/home/runner/work/KalProg/KalProg/Takesako_solar_eclipses.txt"];
+   If[!FileExistsQ[filename],
+    filename = FileNameJoin[{NotebookDirectory[], "Takesako_solar_eclipses.txt"}]];
+   
+   (* Check if file exists *)
+   If[!FileExistsQ[filename],
+    Print["Error: Takesako_solar_eclipses.txt file not found"];
+    Return[{}]];
+   
+   (* Read the file line by line *)
+   fileStream = OpenRead[filename];
+   
+   (* Skip the header line *)
+   line = Read[fileStream, String];
+   
+   (* Read all lines and filter by year *)
+   While[line =!= EndOfFile,
+    line = Read[fileStream, String];
+    If[line =!= EndOfFile && StringLength[line] > 0,
+     (* Parse the tab-separated line *)
+     parts = StringSplit[line, "\t"];
+     If[Length[parts] >= 10,
+      (* Extract fields: Year Month Day Hour Minute Second Catalog Saros Type Gamma *)
+      eclYear = ToExpression[parts[[1]]];
+      
+      (* Check if this eclipse is for the requested year (in Takesako format) *)
+      If[eclYear == takesakoYear,
+       month = ToExpression[parts[[2]]];
+       day = ToExpression[parts[[3]]];
+       hour = ToExpression[parts[[4]]];
+       minute = ToExpression[parts[[5]]];
+       second = ToExpression[parts[[6]]];
+       catalog = ToExpression[parts[[7]]];
+       saros = ToExpression[parts[[8]]];
+       eclipseType = parts[[9]];
+       gamma = ToExpression[parts[[10]]];
+       
+       (* Determine calendar type based on year *)
+       (* Use Julian calendar for years before 1582, Gregorian for 1582 and after *)
+       (* Note: Takesako data uses astronomical year numbering where year 0 exists *)
+       (* Year -13000 in Takesako = 13001 BCE *)
+       If[year < 1582,
+        calendarType = Julian;
+        dateObj = Julian[year, month, day],
+        calendarType = Gregorian;
+        dateObj = Gregorian[year, month, day]
+       ];
+       
+       (* Create time list *)
+       timeList = {hour, minute, second};
+       
+       (* Create eclipse entry in format: {date, time, type} *)
+       (* Include additional info: catalog, saros, gamma *)
+       result = {dateObj, timeList, eclipseType, catalog, saros, gamma};
+       
+       (* Add to results list *)
+       eclipses = Append[eclipses, result];
+      ]
+     ]
+    ]
+   ];
+   
+   Close[fileStream];
+   
+   (* Return the list of eclipses *)
+   eclipses
+  ]
   
 ggg[{g_,m_,s_}]:= Module[{sgn=1},
  If[g<0 || m<0 || s<0, sgn=-1];
