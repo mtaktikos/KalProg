@@ -358,6 +358,8 @@ SonnenfinsternisTD::usage="SonnenfinsternisTD[year] returns all solar eclipses i
  
 MondfinsternisTD::usage="MondfinsternisTD[year] returns all lunar eclipses in year in dynamical time, after a simpfied algorithm by Meeus. Dynamical time returns dates of the years before 1582 as Julian dates"
 
+TakesakoSolarEclipse::usage="TakesakoSolarEclipse[year] returns all solar eclipses in year using NeumondAlternate data and Meeus algorithm. Returns dates in Julian calendar for years before 1582, Gregorian after. Compatible with Takesako solar eclipse data format."
+
 InRangeQ::usage="InRangeQ[tee, range] returns True if $tee$ is in $range$."
 
 ListRange::usage="ListRange[ell, range] returns those moments in list ell that occur in range."
@@ -372,10 +374,10 @@ ggg::usage= "ggg[{grad,min,sec}] wandelt {grad,min,sec} in
   Julianische Datum an, d.h. die Zahl der seit dem 17.11.1858 
   0 Uhr WEZ vergangenen Tage. Es gilt 
   mjd[date,0]= julianisch[date]-2400000.5.
-  mjd berücksichtigt, daß auf den 4.10.1582 der 15.10.1582 folgte." 
+  mjd berï¿½cksichtigt, daï¿½ auf den 4.10.1582 der 15.10.1582 folgte." 
 
 unmjd::usage= "unmjd[mjd] bestimmt zu einer Anzahl Tage
- mjd das zugehörige Kalenderdatum." 
+ mjd das zugehï¿½rige Kalenderdatum." 
 
  fixedDate::usage ="fixedDate[datum,stunde] geht vom ersten Tag
 des Kalenders aus."
@@ -2421,6 +2423,59 @@ SonnenfinsternisTD[year_] :=
      If[Length[ereignis] == 3, erg = Append[erg, ereignis]]]] , {i, 1,
      Length[vollmonde]}];
   erg ] 
+
+TakesakoSolarEclipse[year_] := 
+ Module[{neumonde, ereignis, kk, tt, ee, mm, ms, ff, abstandzu180, 
+   omega, f1, a1, pp, qq, ww, gamma, uu, erg = {}},
+  neumonde = NeumondAlternate[year]; 
+  neumonde = Map[WeltzeitInDynamisch, neumonde];
+  Do[ereignis = neumonde[[i]];
+   kk = Floor[(yearRealzahl[ereignis] - 2000)*12.3685];
+   tt = kk/1236.85;
+   ee = 1 - 0.002516 tt - 0.0000074 tt^2 (* 47.6, 
+   eccentrity of earth's orbit around the sun *);
+   mm = 2.5534 + 29.10535670 kk - 0.0000014*tt*tt - 0.00000011 tt^3 (* 
+   49.4 sun mean anomaly *); 
+   ms = 201.5643 + 385.81693528 kk + 0.0107582 tt^2 + 
+     0.00001238 tt^3 - 0.000000058 tt^4 (* 49.5 moons mean anomaly*); 
+   ff  = 160.7108 + 390.67050284 kk - 0.0016118 tt^2 - 
+     0.00000227 tt^3 + 0.000000011 tt^4 (* 
+   49.6 moon argument for latitude*); 
+   omega = 124.7746 - 1.56375588 kk + 0.0020672 tt^2 + 
+     0.00000215 tt^3 (* 49.7 longitude of ascending node*);
+   mm = Mod[mm, 360];
+   ms = Mod[ms, 360];
+   ff = Mod[ff, 360];
+   omega = Mod[omega, 360];
+   f1 = ff - 0.02665 Degree *Sin[omega Degree];
+   a1 = 299.77 Degree + 0.107408 Degree kk - 0.009173 tt^2 ;
+   pp = 0.2070 ee * Sin[mm Degree] + 0.0024 ee *Sin[2 mm Degree] - 
+     0.0392*Sin[ms Degree] + 0.0116*Sin[2 ms Degree] - 
+     0.0073 ee*Sin[(ms + mm) Degree ] + 0.0067 ee*Sin[ms - mm] + 
+     0.0118*Sin[2 f1 Degree]; 
+   qq = 5.2207 - 0.0048 ee*Cos[mm Degree] + 
+     0.0020 ee*Cos[2 mm Degree] - 0.3299 Cos[ms Degree] - 
+     0.0060 ee Cos[(ms + mm) Degree] + 
+     0.0041 ee Cos[(ms - mm) Degree]; ww = Abs[Cos[f1 Degree]];
+   gamma = (pp Cos[f1 Degree] + qq*Sin[f1 Degree])*(1 - 0.0048 ww);
+   uu = 0.0059 + 0.0046 ee Cos[mm Degree] - 0.0182 Cos[ms Degree] + 
+     0.0004 Cos[2 ms Degree] - 0.0005 Cos[(mm + ms) Degree];
+   abstandzu180 = Abs[180 - ff];
+   If[year > 1581,
+    If[(abstandzu180 < 
+        13.9) || ((abstandzu180 < 21) && (Abs[gamma] <= 1.5433 + uu)), 
+     If[uu < 0, ereignis = Append[ereignis, "Total"], 
+      ereignis = Append[ereignis, "Nichttotal"]];
+     If[Length[ereignis] == 3, erg = Append[erg, ereignis]]] ,
+    If[(abstandzu180 < 
+        13.9) || ((abstandzu180 < 21) && (Abs[gamma] <= 
+          1.5433 + uu)),
+     Which[uu < 0 && i > 1, 
+      ereignis = Append[neumonde[[i - 1]], "Total"], i > 1, 
+      ereignis = Append[neumonde[[i - 1]], "Nichttotal"]];
+     If[Length[ereignis] == 3, erg = Append[erg, ereignis]]]] , {i, 1,
+     Length[neumonde]}];
+  erg ]
   
 ggg[{g_,m_,s_}]:= Module[{sgn=1},
  If[g<0 || m<0 || s<0, sgn=-1];
@@ -3067,17 +3122,17 @@ Qussay[date_Integer] :=
 MonthNames[Icelandic, ASCII] = {
 	"Harpa", 
 	"Skerpia", 
-	"Sólmánuður", 
+	"Sï¿½lmï¿½nuï¿½ur", 
 	"Samarauki", 
 	"Heyannir", 
-	"Tvímánuður", 
-	"Haustmánuður", 
-	"Gormánuður", 
-	"Ýlir", 
-	"Mörsugur",
-    "Þorri",
-    "Góa",
-	"Einmánuður"}
+	"Tvï¿½mï¿½nuï¿½ur", 
+	"Haustmï¿½nuï¿½ur", 
+	"Gormï¿½nuï¿½ur", 
+	"ï¿½lir", 
+	"Mï¿½rsugur",
+    "ï¿½orri",
+    "Gï¿½a",
+	"Einmï¿½nuï¿½ur"}
 
 (** Icelandic-epoch **)
 
@@ -6030,7 +6085,7 @@ fruehesterSonnenuntergang[jahr_, ort_] :=
     erg = {21, Sonnenuntergang[Gregorian[jahr, 12, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der früheste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der frï¿½heste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6040,7 +6095,7 @@ fruehesterSonnenaufgang[jahr_, ort_] :=
     erg = {21, Sonnenaufgang[Gregorian[jahr, 6, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der früheste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der frï¿½heste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6050,7 +6105,7 @@ spaetesterSonnenaufgang[jahr_, ort_] :=
    erg = {tag, Sonnenaufgang[Gregorian[jahr, 12, 21], ort]};
    Do[tag = DaysPlusC[tag, 1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der späteste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der spï¿½teste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
   erg[[1]] ]
@@ -6061,7 +6116,7 @@ spaetesterSonnenuntergang[jahr_, ort_] :=
    Do[tag = DaysPlusC[tag, 1]; 
     akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der späteste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der spï¿½teste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]];
