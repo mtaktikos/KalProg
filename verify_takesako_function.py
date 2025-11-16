@@ -47,7 +47,7 @@ def get_takesako_solar_eclipses(mathematica_year, filename='Takesako_solar_eclip
             
             for line in f:
                 parts = line.strip().split('\t')
-                if len(parts) >= 10:
+                if len(parts) >= 8:
                     year = int(parts[0])
                     
                     if year == takesako_year:
@@ -58,10 +58,8 @@ def get_takesako_solar_eclipses(mathematica_year, filename='Takesako_solar_eclip
                             'hour': int(parts[3]),
                             'minute': int(parts[4]),
                             'second': int(parts[5]),
-                            'catalog': int(parts[6]),
-                            'saros': int(parts[7]),
-                            'type': parts[8],
-                            'gamma': float(parts[9])
+                            'type': parts[6],
+                            'gamma': float(parts[7])
                         }
                         eclipses.append(eclipse)
         
@@ -80,8 +78,6 @@ def format_eclipse(eclipse):
     return (f"{eclipse['year']:6d}-{eclipse['month']:02d}-{eclipse['day']:02d} "
             f"{eclipse['hour']:02d}:{eclipse['minute']:02d}:{eclipse['second']:02d} "
             f"Type: {eclipse['type']} "
-            f"Catalog: {eclipse['catalog']:7d} "
-            f"Saros: {eclipse['saros']:4d} "
             f"Gamma: {eclipse['gamma']:7.4f}")
 
 
