@@ -120,7 +120,7 @@ AllSolE[x_] := Module[{erg = {}},
 
 TotalSolE[x_] := Module[{erg = {}},
   Do[Which[seC[[1, i, 3]] > x, 
-    Break[], (seC[[1, i, 3]] == x) && (seC[[1, i, 12]] === "T"), 
+    Break[], (seC[[1, i, 3]] == x) && (seC[[1, i, 7]] === "T"), 
     erg = Append[erg, seC[[1, i]]]],
    {i, 1, Length[seC[[1]]]}];
   erg]
@@ -135,7 +135,7 @@ AllLunE[x_] := Module[{erg = {}},
 TotalLunE[x_] := Module[{erg = {}},
    Do[Which[leC[[1, i, 2]] > x, 
      Break[], (leC[[1, i, 2]] == 
-        x)  && (StringPart[leC[[1, i, 11]], 1] === "T"), 
+        x)  && (StringPart[leC[[1, i, 7]], 1] === "T"), 
      erg = Append[erg, leC[[1, i]]]],
     {i, 1, Length[leC[[1]]]}];
    erg]
@@ -372,10 +372,10 @@ ggg::usage= "ggg[{grad,min,sec}] wandelt {grad,min,sec} in
   Julianische Datum an, d.h. die Zahl der seit dem 17.11.1858 
   0 Uhr WEZ vergangenen Tage. Es gilt 
   mjd[date,0]= julianisch[date]-2400000.5.
-  mjd berücksichtigt, daß auf den 4.10.1582 der 15.10.1582 folgte." 
+  mjd berï¿½cksichtigt, daï¿½ auf den 4.10.1582 der 15.10.1582 folgte." 
 
 unmjd::usage= "unmjd[mjd] bestimmt zu einer Anzahl Tage
- mjd das zugehörige Kalenderdatum." 
+ mjd das zugehï¿½rige Kalenderdatum." 
 
  fixedDate::usage ="fixedDate[datum,stunde] geht vom ersten Tag
 des Kalenders aus."
@@ -3067,17 +3067,17 @@ Qussay[date_Integer] :=
 MonthNames[Icelandic, ASCII] = {
 	"Harpa", 
 	"Skerpia", 
-	"Sólmánuður", 
+	"Sï¿½lmï¿½nuï¿½ur", 
 	"Samarauki", 
 	"Heyannir", 
-	"Tvímánuður", 
-	"Haustmánuður", 
-	"Gormánuður", 
-	"Ýlir", 
-	"Mörsugur",
-    "Þorri",
-    "Góa",
-	"Einmánuður"}
+	"Tvï¿½mï¿½nuï¿½ur", 
+	"Haustmï¿½nuï¿½ur", 
+	"Gormï¿½nuï¿½ur", 
+	"ï¿½lir", 
+	"Mï¿½rsugur",
+    "ï¿½orri",
+    "Gï¿½a",
+	"Einmï¿½nuï¿½ur"}
 
 (** Icelandic-epoch **)
 
@@ -6030,7 +6030,7 @@ fruehesterSonnenuntergang[jahr_, ort_] :=
     erg = {21, Sonnenuntergang[Gregorian[jahr, 12, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der früheste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der frï¿½heste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6040,7 +6040,7 @@ fruehesterSonnenaufgang[jahr_, ort_] :=
     erg = {21, Sonnenaufgang[Gregorian[jahr, 6, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der früheste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der frï¿½heste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6050,7 +6050,7 @@ spaetesterSonnenaufgang[jahr_, ort_] :=
    erg = {tag, Sonnenaufgang[Gregorian[jahr, 12, 21], ort]};
    Do[tag = DaysPlusC[tag, 1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der späteste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der spï¿½teste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
   erg[[1]] ]
@@ -6061,7 +6061,7 @@ spaetesterSonnenuntergang[jahr_, ort_] :=
    Do[tag = DaysPlusC[tag, 1]; 
     akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der späteste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der spï¿½teste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]];
