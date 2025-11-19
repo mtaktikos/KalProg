@@ -117,21 +117,18 @@ AllSolE[x_] := Module[{erg = {}},
     erg = Append[erg, seC[[1, i]]]],
    {i, 1, Length[seC[[1]]]}];
   erg]
-
 TotalSolE[x_] := Module[{erg = {}},
   Do[Which[seC[[1, i, 1]] > x, 
     Break[], (seC[[1, i, 1]] == x) && (seC[[1, i, 7]] === "T"), 
     erg = Append[erg, seC[[1, i]]]],
    {i, 1, Length[seC[[1]]]}];
   erg]
-
 AllLunE[x_] := Module[{erg = {}},
   Do[
    Which[leC[[1, i, 1]] > x, Break[], leC[[1, i, 1]] == x, 
     erg = Append[erg, leC[[1, i]]]],
    {i, 1, Length[leC[[1]]]}];
   erg]
-
 TotalLunE[x_] := Module[{erg = {}},
    Do[Which[leC[[1, i, 1]] > x, 
      Break[], (leC[[1, i, 1]] == 
@@ -139,8 +136,30 @@ TotalLunE[x_] := Module[{erg = {}},
      erg = Append[erg, leC[[1, i]]]],
     {i, 1, Length[leC[[1]]]}];
    erg]
-
-
+ SonnenfinsternisAlternate[year_] := Module[{basislsg},
+   If[year > 0, 
+    basislsg = Map[Floor, AllSolE[year]] /. Floor[x_String] -> x, 
+    basislsg = 
+     Map[Floor, AllSolE[year + 1]] /. Floor[x_String] -> x];
+   basislsg]
+TotaleSonnenfinsternisAlternate[year_] := Module[{basislsg},
+   If[year > 0, 
+    basislsg = Map[Floor, TotalSolE[year]] /. Floor[x_String] -> x, 
+    basislsg = 
+     Map[Floor, TotalSolE[year + 1]] /. Floor[x_String] -> x];
+   basislsg]
+ MondfinsternisAlternate[year_] := Module[{basislsg},
+   If[year > 0, 
+    basislsg = Map[Floor, AllLunE[year]] /. Floor[x_String] -> x, 
+    basislsg = 
+     Map[Floor, AllLunE[year + 1]] /. Floor[x_String] -> x];
+   basislsg]
+TotaleMondfinsternisAlternate[year_] := Module[{basislsg},
+   If[year > 0, 
+    basislsg = Map[Floor, TotalLunE[year]] /. Floor[x_String] -> x, 
+    basislsg = 
+     Map[Floor, TotalLunE[year + 1]] /. Floor[x_String] -> x];
+   basislsg]
 
 BeginPackage["Calendrica`"]
 
