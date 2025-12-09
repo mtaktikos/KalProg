@@ -62,19 +62,30 @@ The following elements were translated in the Mathematica notebook:
 
 ## How to Generate the PDF
 
-### Option 1: Using Mathematica (Recommended)
+### Option 1: Using Mathematica Desktop (Recommended)
 1. Open `Chronometry_EN.nb` in Mathematica
-2. Go to File → Save As → PDF
-3. Save as `Chronometry.pdf`
+2. Review the translated content
+3. Go to **File → Save As → PDF**
+4. Save as `Chronometry.pdf`
+5. Commit the generated PDF to the repository
 
 ### Option 2: Using WolframScript (Command Line)
+If you have WolframScript installed:
 ```bash
 wolframscript -code "nb = NotebookOpen[\"Chronometry_EN.nb\"]; Export[\"Chronometry.pdf\", nb]; NotebookClose[nb];"
 ```
 
 ### Option 3: Using Wolfram Cloud
-1. Upload `Chronometry_EN.nb` to Wolfram Cloud
-2. Use the cloud interface to export to PDF
+1. Go to https://www.wolframcloud.com/
+2. Upload `Chronometry_EN.nb`
+3. Open the notebook in the cloud
+4. Use File → Download → PDF
+5. Save as `Chronometry.pdf`
+
+### Option 4: Using Wolfram Player (Free)
+1. Download Wolfram Player (free) from https://www.wolfram.com/player/
+2. Open `Chronometry_EN.nb`
+3. Print to PDF using your system's print dialog
 
 ## Verification Checklist
 After generating the PDF, verify:
