@@ -72,7 +72,11 @@ The following elements were translated in the Mathematica notebook:
 ### Option 2: Using WolframScript (Command Line)
 If you have WolframScript installed:
 ```bash
-wolframscript -code "nb = NotebookOpen[\"Chronometry_EN.nb\"]; Export[\"Chronometry.pdf\", nb]; NotebookClose[nb];"
+./generate_pdf.wls
+```
+Or:
+```bash
+wolframscript generate_pdf.wls
 ```
 
 ### Option 3: Using Wolfram Cloud
