@@ -371,10 +371,10 @@ ggg::usage= "ggg[{grad,min,sec}] wandelt {grad,min,sec} in
   Julianische Datum an, d.h. die Zahl der seit dem 17.11.1858 
   0 Uhr WEZ vergangenen Tage. Es gilt 
   mjd[date,0]= julianisch[date]-2400000.5.
-  mjd berücksichtigt, daß auf den 4.10.1582 der 15.10.1582 folgte." 
+  mjd berï¿½cksichtigt, daï¿½ auf den 4.10.1582 der 15.10.1582 folgte." 
 
 unmjd::usage= "unmjd[mjd] bestimmt zu einer Anzahl Tage
- mjd das zugehörige Kalenderdatum." 
+ mjd das zugehï¿½rige Kalenderdatum." 
 
  fixedDate::usage ="fixedDate[datum,stunde] geht vom ersten Tag
 des Kalenders aus."
@@ -870,6 +870,23 @@ if $pYear$ is a leap year on the Persian calendar, False otherwise."
 
 ArithmeticPersianYearFromFixed::usage = "ArithmeticPersianYearFromFixed[date]
 returns the Persian year corresponding to the fixed $date$."
+
+
+(* ;;;; Section: Jalali Calendar *)
+
+Calendrica`Private`CalendarUsage[Jalali, "Jalali (Malikshahi)", "Jalali"]
+Calendrica`Private`CalendarFields[Jalali,
+	{CYear, CMonth, CDay},
+	{Integer, Integer, Integer}]
+
+JalaliEpoch::usage = "JalaliEpoch[] returns the fixed date of the start of the
+Jalali (Malikshahi) calendar (15 March 1079 CE, Julian)."
+
+JalaliLeapYearQ::usage = "JalaliLeapYearQ[jYear] returns True if $jYear$ is a
+leap year on the Jalali calendar, False otherwise."
+
+JalaliYearFromFixed::usage = "JalaliYearFromFixed[date] returns the Jalali year
+corresponding to the fixed $date$."
 
 
 (* ;;;; Section: Observational Islamic Calendar *)
@@ -3167,17 +3184,17 @@ Qussay[date_Integer] :=
 MonthNames[Icelandic, ASCII] = {
 	"Harpa", 
 	"Skerpia", 
-	"Sólmánuður", 
+	"Sï¿½lmï¿½nuï¿½ur", 
 	"Samarauki", 
 	"Heyannir", 
-	"Tvímánuður", 
-	"Haustmánuður", 
-	"Gormánuður", 
-	"Ýlir", 
-	"Mörsugur",
-    "Þorri",
-    "Góa",
-	"Einmánuður"}
+	"Tvï¿½mï¿½nuï¿½ur", 
+	"Haustmï¿½nuï¿½ur", 
+	"Gormï¿½nuï¿½ur", 
+	"ï¿½lir", 
+	"Mï¿½rsugur",
+    "ï¿½orri",
+    "Gï¿½a",
+	"Einmï¿½nuï¿½ur"}
 
 (** Icelandic-epoch **)
 
@@ -5405,6 +5422,106 @@ Format[date_ArithmeticPersian] :=
 
 
 (*
+;;;; Section: Jalali Calendar
+
+ 888888  8888888888 888      d8888  888      8888888 
+     "88b 888        888     d88888  888        888   
+      888 888        888    d88P888  888        888   
+      888 8888888    888   d88P 888  888        888   
+ .d88P    888        888  d88P  888  888        888   
+ 888"     888        888 d88P   888  888        888   
+ Y88b.    888        888d88P    888  888        888   
+  "Y888   8888888888 88888P     888  8888888888 888   
+
+*)
+
+
+(** jalali-epoch **)
+
+JalaliEpoch[] =
+	ToFixed[Julian[CE[1079], March[], 15]]
+
+
+(** jalali-leap-year? **)
+
+JalaliLeapYearQ[jYear_Integer] :=
+	Module[{y, year},
+		y = If[0 < jYear, jYear - 474, jYear - 473];
+		year = Mod[y, 2820] + 474;
+		Mod[(year + 38) 682, 2816] < 682
+	]
+
+
+(** fixed-from-jalali **)
+
+ToFixed[date_?JalaliQ] :=
+	Module[{day, month, jYear, y, year},
+		day = CDay[date];
+		month = CMonth[date];
+		jYear = CYear[date];
+		y = If[0 < jYear, jYear - 474, jYear - 473];
+		year = Mod[y, 2820] + 474;
+		JalaliEpoch[] - 1
+			+ 1029983 Quotient[y, 2820]
+			+ 365 (year - 1)
+			+ Quotient[682 year - 110, 2816]
+			+ 30 (month - 1)
+			+ day
+	]
+
+
+(** jalali-year-from-fixed **)
+
+JalaliYearFromFixed[date_Integer] :=
+	Module[{l0, n2820, d1, y2820, year},
+		l0 = date - ToFixed[Jalali[475, 1, 1]];
+		n2820 = Quotient[l0, 1029983];
+		d1 = Mod[l0, 1029983];
+		y2820 = If[d1 == 1029982, 2820, Quotient[2816 d1 + 1031337, 1028522]];
+		year = 474 + 2820 n2820 + y2820;
+		If[0 < year, year, year - 1]
+	]
+
+
+(** jalali-from-fixed **)
+
+Jalali[date_Integer] :=
+	Module[{year, dayOfYear, month, day},
+		year = JalaliYearFromFixed[date];
+		dayOfYear = 1 + date - ToFixed[Jalali[year, 1, 1]];
+		month = Min[12, Ceiling[dayOfYear / 30]];
+		day = date - (ToFixed[Jalali[year, month, 1]] - 1);
+		Jalali[year, month, day]
+	]
+
+
+MonthNames[Jalali, ASCII] = {
+	"Farvardin",
+	"Urdibihisht",
+	"Khurdad",
+	"Tir",
+	"Murdad",
+	"Shahrivar",
+	"Mihr",
+	"Aban",
+	"Azar",
+	"Day",
+	"Bahman",
+	"Isfandarmudh"}
+
+
+Format[date_Jalali] :=
+	If[JalaliQ[date],
+		StringForm["`` `` `` J.E.",
+			CDay[date],
+			NameFromMonth[CMonth[date], Jalali],
+			CYear[date]
+		],
+		ToString[InputForm[date]]
+	]
+
+
+(*
 ;;;; Section: Modified French Revolutionary Calendar
 
 888b     d888               888 d8b  .d888 d8b               888     8888888888                                   888      
@@ -6130,7 +6247,7 @@ fruehesterSonnenuntergang[jahr_, ort_] :=
     erg = {21, Sonnenuntergang[Gregorian[jahr, 12, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der früheste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der frï¿½heste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6140,7 +6257,7 @@ fruehesterSonnenaufgang[jahr_, ort_] :=
     erg = {21, Sonnenaufgang[Gregorian[jahr, 6, 21], ort]}, akt},
    Do[tag = DaysPlusC[tag, -1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] < erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der früheste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der frï¿½heste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]]
@@ -6150,7 +6267,7 @@ spaetesterSonnenaufgang[jahr_, ort_] :=
    erg = {tag, Sonnenaufgang[Gregorian[jahr, 12, 21], ort]};
    Do[tag = DaysPlusC[tag, 1]; akt = {tag, Sonnenaufgang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der späteste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
+   Print["Der spï¿½teste Sonnenaufgang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
   erg[[1]] ]
@@ -6161,7 +6278,7 @@ spaetesterSonnenuntergang[jahr_, ort_] :=
    Do[tag = DaysPlusC[tag, 1]; 
     akt = {tag, Sonnenuntergang[tag, ort]};
     If[ akt[[2]] > erg[[2]], erg = akt, Break[] ], {i, 1, 100}];
-   Print["Der späteste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
+   Print["Der spï¿½teste Sonnenuntergang in ", ort, " im Jahr ", jahr, 
     " findet am ", erg[[1]], " statt"];
    Print[" und zwar um ", gms[erg[[2]]], " Uhr lokaler Zeit"];
    erg[[1]]];
